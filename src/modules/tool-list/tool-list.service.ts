@@ -122,6 +122,81 @@ export class ToolsService {
     return this.toolsRepo.findSimilar(tool.id, limit);
   }
 
+
+ async findToolById(id: string) {
+  const tool = await this.prisma.tool.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+   
+    if (!tool) {
+      throw new NotFoundException(`Tool with slug "${id}" not found`);
+    }
+    return this.toolsRepo.findById(tool.id);
+  }
+
+
+async likeUnlikeTool(toolId: string, userId: string) {
+  const tool = await this.prisma.tool.findUnique({
+    where: { id: toolId },
+    select: { id: true },
+  });
+
+  if (!tool) {
+    throw new NotFoundException(`Tool with id "${toolId}" not found`);
+  }
+  // Check if already favorited
+  const existingFavorite = await this.prisma.favorite.findUnique({
+    where: {
+      userId_toolId: {
+        userId,
+        toolId,
+      },
+    },
+  });
+
+  if (existingFavorite) {
+    await this.prisma.favorite.delete({
+      where: {
+        userId_toolId: {
+          userId,
+          toolId,
+        },
+      },
+    });
+    await this.prisma.tool.update({
+      where: { id: toolId },
+      data: {
+        favoriteCount: {
+          decrement: 1,
+        },
+      },
+    });
+
+    return { message: 'Removed from favorites', liked: false };
+  } else {
+    await this.prisma.favorite.create({
+      data: {
+        userId,
+        toolId,
+      },
+    });
+
+    // Increase count
+    await this.prisma.tool.update({
+      where: { id: toolId },
+      data: {
+        favoriteCount: {
+          increment: 1,
+        },
+      },
+    });
+
+    return { message: 'Added to favorites', liked: true };
+  }
+}
+
+
   /**
    * Get tools by category
    */

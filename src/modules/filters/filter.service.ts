@@ -12,7 +12,7 @@ export interface FilterMetadata {
     path: string;
     title: string;
     type: string;
-    values?: any[];
+    options?: any[];
   }[];
 }
 
@@ -26,39 +26,130 @@ export class ToolsFilterService {
    * Get available filters for tools entity
    * Frontend uses this to build the filter UI
    */
+  // async getFilters(): Promise<FilterMetadata> {
+  //   return {
+  //     filters: [
+  //       // Text search filters
+  //       { op: FILTER_CONSTANTS.OPERATORS.CONTAINS, path: 'name',        title: 'Tool Name',    type: 'text' },
+  //       { op: FILTER_CONSTANTS.OPERATORS.CONTAINS, path: 'tagline',     title: 'Tagline',      type: 'text' },
+  //       { op: FILTER_CONSTANTS.OPERATORS.CONTAINS, path: 'description', title: 'Description',  type: 'text' },
+  //       { op: FILTER_CONSTANTS.OPERATORS.CONTAINS, path: 'aiModel',     title: 'AI Model',     type: 'text' },
+
+  //       // Enum/Array filters
+  //       { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'platformType',    title: 'Platform Type',   type: 'enum', values: await this.getPlatformTypes() },
+  //       { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'targetAudience',  title: 'Target Audience', type: 'enum', values: await this.getTargetAudiences() },
+  //       { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'status',          title: 'Status',          type: 'enum', values: ['PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED'] },
+
+  //       // Boolean filters
+  //       { op: FILTER_CONSTANTS.OPERATORS.EQUALS, path: 'isPublished', title: 'Published', type: 'boolean' },
+  //       { op: FILTER_CONSTANTS.OPERATORS.EQUALS, path: 'isFeatured',  title: 'Featured',  type: 'boolean' },
+  //       { op: FILTER_CONSTANTS.OPERATORS.EQUALS, path: 'isVerified',  title: 'Verified',  type: 'boolean' },
+
+  //       // Number range filters
+  //       { op: FILTER_CONSTANTS.OPERATORS.GTE,     path: 'averageRating', title: 'Min Rating',     type: 'number' },
+  //       { op: FILTER_CONSTANTS.OPERATORS.BETWEEN, path: 'averageRating', title: 'Rating Range',   type: 'range' },
+  //       { op: FILTER_CONSTANTS.OPERATORS.GTE,     path: 'viewCount',     title: 'Min View Count', type: 'number' },
+
+  //       // Relation filters
+  //       { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'categories.category.slug', title: 'Categories', type: 'relation', values: await this.getCategorySlugs() },
+  //       { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'tags.tag.slug',           title: 'Tags',       type: 'relation', values: await this.getTagSlugs() },
+  //       { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'useCases.useCase.slug',   title: 'Use Cases',  type: 'relation', values: await this.getUseCaseSlugs() },
+  //       { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'industries.industry.slug', title: 'Industries', type: 'relation', values: await this.getIndustrySlugs() },
+  //       { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'pricingPlans.type',       title: 'Pricing Type', type: 'relation', values: ['FREE', 'FREEMIUM', 'PAID', 'SUBSCRIPTION', 'ONE_TIME', 'USAGE_BASED', 'CUSTOM'] },
+  //     ],
+  //   };
+  // }
+
+
+   // src/modules/filters/filter.service.ts
+
   async getFilters(): Promise<FilterMetadata> {
-    return {
-      filters: [
-        // Text search filters
-        { op: FILTER_CONSTANTS.OPERATORS.CONTAINS, path: 'name',        title: 'Tool Name',    type: 'text' },
-        { op: FILTER_CONSTANTS.OPERATORS.CONTAINS, path: 'tagline',     title: 'Tagline',      type: 'text' },
-        { op: FILTER_CONSTANTS.OPERATORS.CONTAINS, path: 'description', title: 'Description',  type: 'text' },
-        { op: FILTER_CONSTANTS.OPERATORS.CONTAINS, path: 'aiModel',     title: 'AI Model',     type: 'text' },
+  return {
+    filters: [
+      // Text search filters
+      { op: FILTER_CONSTANTS.OPERATORS.CONTAINS, path: 'name',        title: 'Tool Name',    type: 'text' },
+      { op: FILTER_CONSTANTS.OPERATORS.CONTAINS, path: 'tagline',     title: 'Tagline',      type: 'text' },
+      { op: FILTER_CONSTANTS.OPERATORS.CONTAINS, path: 'description', title: 'Description',  type: 'text' },
+      { op: FILTER_CONSTANTS.OPERATORS.CONTAINS, path: 'aiModel',     title: 'AI Model',     type: 'text' },
 
-        // Enum/Array filters
-        { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'platformType',    title: 'Platform Type',   type: 'enum', values: await this.getPlatformTypes() },
-        { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'targetAudience',  title: 'Target Audience', type: 'enum', values: await this.getTargetAudiences() },
-        { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'status',          title: 'Status',          type: 'enum', values: ['PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED'] },
+      // Enum/Array filters - Changed 'values' to 'options'
+      { 
+        op: FILTER_CONSTANTS.OPERATORS.IN, 
+        path: 'platformType', 
+        title: 'Platform Type', 
+        type: 'enum', 
+        options: (await this.getPlatformTypes()).map(v => ({ value: v, label: v.replace('_', ' ') }))
+      },
+      { 
+        op: FILTER_CONSTANTS.OPERATORS.IN, 
+        path: 'targetAudience', 
+        title: 'Target Audience', 
+        type: 'enum', 
+        options: (await this.getTargetAudiences()).map(v => ({ value: v, label: v.replace('_', ' ') }))
+      },
+      { 
+        op: FILTER_CONSTANTS.OPERATORS.IN, 
+        path: 'status', 
+        title: 'Status', 
+        type: 'enum', 
+        options: ['DRAFT', 'PUBLISHED', 'ARCHIVED'].map(v => ({ value: v, label: v }))
+      },
 
-        // Boolean filters
-        { op: FILTER_CONSTANTS.OPERATORS.EQUALS, path: 'isPublished', title: 'Published', type: 'boolean' },
-        { op: FILTER_CONSTANTS.OPERATORS.EQUALS, path: 'isFeatured',  title: 'Featured',  type: 'boolean' },
-        { op: FILTER_CONSTANTS.OPERATORS.EQUALS, path: 'isVerified',  title: 'Verified',  type: 'boolean' },
+      // Boolean filters
+      { op: FILTER_CONSTANTS.OPERATORS.EQUALS, path: 'isPublished', title: 'Published', type: 'boolean' },
+      { op: FILTER_CONSTANTS.OPERATORS.EQUALS, path: 'isFeatured',  title: 'Featured',  type: 'boolean' },
+      { op: FILTER_CONSTANTS.OPERATORS.EQUALS, path: 'isVerified',  title: 'Verified',  type: 'boolean' },
 
-        // Number range filters
-        { op: FILTER_CONSTANTS.OPERATORS.GTE,     path: 'averageRating', title: 'Min Rating',     type: 'number' },
-        { op: FILTER_CONSTANTS.OPERATORS.BETWEEN, path: 'averageRating', title: 'Rating Range',   type: 'range' },
-        { op: FILTER_CONSTANTS.OPERATORS.GTE,     path: 'viewCount',     title: 'Min View Count', type: 'number' },
+      // Number range filters
+      { op: FILTER_CONSTANTS.OPERATORS.GTE,     path: 'averageRating', title: 'Min Rating',     type: 'number' },
+      { op: FILTER_CONSTANTS.OPERATORS.BETWEEN, path: 'averageRating', title: 'Rating Range',   type: 'range' },
+      { op: FILTER_CONSTANTS.OPERATORS.GTE,     path: 'viewCount',     title: 'Min View Count', type: 'number' },
 
-        // Relation filters
-        { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'categories.category.slug', title: 'Categories', type: 'relation', values: await this.getCategorySlugs() },
-        { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'tags.tag.slug',           title: 'Tags',       type: 'relation', values: await this.getTagSlugs() },
-        { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'useCases.useCase.slug',   title: 'Use Cases',  type: 'relation', values: await this.getUseCaseSlugs() },
-        { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'industries.industry.slug', title: 'Industries', type: 'relation', values: await this.getIndustrySlugs() },
-        { op: FILTER_CONSTANTS.OPERATORS.IN, path: 'pricingPlans.type',       title: 'Pricing Type', type: 'relation', values: ['FREE', 'FREEMIUM', 'PAID', 'SUBSCRIPTION', 'ONE_TIME', 'USAGE_BASED', 'CUSTOM'] },
-      ],
-    };
-  }
+      // Relation filters with proper label/value format
+      { 
+        op: FILTER_CONSTANTS.OPERATORS.IN, 
+        path: 'categories.category.slug', 
+        title: 'Categories', 
+        type: 'relation', 
+        options: await this.getCategoryOptions()
+      },
+      { 
+        op: FILTER_CONSTANTS.OPERATORS.IN, 
+        path: 'tags.tag.slug', 
+        title: 'Tags', 
+        type: 'relation', 
+        options: await this.getTagOptions()
+      },
+      { 
+        op: FILTER_CONSTANTS.OPERATORS.IN, 
+        path: 'pricingPlans.type', 
+        title: 'Pricing Type', 
+        type: 'relation', 
+        options: ['FREE', 'FREEMIUM', 'SUBSCRIPTION', 'ONE_TIME'].map(v => ({ value: v, label: v }))
+      },
+    ],
+  };
+}
+
+// Update helper methods to return proper format
+private async getCategoryOptions() {
+  const categories = await this.prisma.category.findMany({ 
+    select: { slug: true, name: true },
+    orderBy: { name: 'asc' }
+  });
+  return categories.map(c => ({ value: c.slug, label: c.name }));
+}
+
+private async getTagOptions() {
+  const tags = await this.prisma.tag.findMany({ 
+    select: { slug: true, name: true }, 
+    take: 50, 
+    orderBy: { usageCount: 'desc' } 
+  });
+  return tags.map(t => ({ value: t.slug, label: t.name }));
+}
+
+
 
   /**
    * Apply filters and return tools with pagination

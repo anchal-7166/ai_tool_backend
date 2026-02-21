@@ -120,6 +120,17 @@ model Tool {
   @@index([tagline])
 }
 
+
+model Favorite {
+  id     String @id @default(uuid())
+  userId String
+  toolId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tool Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@unique([userId, toolId]) 
+}
+
 enum ToolStatus {
   PENDING
   APPROVED

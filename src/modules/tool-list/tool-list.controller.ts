@@ -6,6 +6,8 @@ import {
   Post,
   ParseIntPipe,
   DefaultValuePipe,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -15,6 +17,8 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { ToolsService } from './tool-list.service';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { JwtAuthGuard } from '../auth/jwtguard';
 
 @ApiTags('Tools')
 @Controller('tools')
@@ -140,4 +144,33 @@ export class ToolsController {
   async trackClick(@Param('slug') slug: string) {
     return this.toolsService.trackClick(slug);
   }
+
+
+  @Get('id/:id')
+  @ApiOperation({ summary: 'Get tool by ID' })
+  @ApiParam({ name: 'id', example: 'uuid-here' })
+  @ApiResponse({ status: 200, description: 'Returns tool details by ID' })
+  @ApiResponse({ status: 404, description: 'Tool not found' })
+  async findById(@Param('id') id: string) {
+    return this.toolsService.findToolById(id);
+  }
+
+
+  @Post(':id/favorite')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Like or Unlike a tool (toggle favorite)' })
+  @ApiParam({ name: 'id', example: 'uuid-here' })
+  @ApiResponse({ status: 200, description: 'Toggles favorite status' })
+  @ApiResponse({ status: 404, description: 'Tool not found' })
+  async likeUnlikeTool(
+    @Param('id') toolId: string, 
+    @Request() req, 
+    // @CurrentUser('id') userId: string
+  ) {
+    const userId = req.user.id;
+    return this.toolsService.likeUnlikeTool(toolId, userId);
+  }
+
+
 }
+
