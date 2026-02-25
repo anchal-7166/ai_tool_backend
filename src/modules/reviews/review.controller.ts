@@ -30,7 +30,6 @@ import { JwtAuthGuard } from '../auth/jwtguard';
 
 @ApiTags('Reviews')
 @Controller('reviews')
-@UseGuards(JwtAuthGuard)
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 

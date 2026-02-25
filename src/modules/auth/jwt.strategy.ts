@@ -16,8 +16,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     config: ConfigService,
     private readonly usersRepo: UsersRepository,
   ) {
-    const secret = config.get<string>('app.jwt.secret');
-     console.log('JWT SECRET LOADED:----------------------------', secret);  
+    const secret = config.get<string>('app.jwt.secret');  
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -27,7 +26,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   async validate(payload: JwtPayload) {
     const user = await this.usersRepo.findById(payload.sub);
-   console.log(user,">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
     if (!user || !user.isActive) {
       throw new UnauthorizedException('User not found or inactive');
     }

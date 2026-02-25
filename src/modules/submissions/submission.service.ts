@@ -87,7 +87,6 @@ export class SubmissionsService {
   async review(id: string, dto: ReviewSubmissionDto) {
     
     const submission = await this.submissionsRepo.findById(id);
-    console.log(submission,"****************")
     if (!submission) throw new NotFoundException('Submission not found');
 
     if (submission.status !== SubmissionStatus.PENDING) {
@@ -270,4 +269,7 @@ export class SubmissionsService {
       throw new BadRequestException(errors);
     }
   }
+
+
+
 }

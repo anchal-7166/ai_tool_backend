@@ -8,6 +8,11 @@ import { SubmissionsModule } from './modules/submissions/submission.module';
 import { ToolsModule } from './modules/tool-list/tool-list.module';
 import { FiltersModule } from './modules/filters/filter.module';
 import { ReviewsModule } from './modules/reviews/review.module';
+import { CategoryModule } from './modules/categories/categories.module';
+import { IndustryModule } from './modules/industries/industries.module';
+import { UseCaseModule } from './modules/use-case/use-case.module';
+import { TagModule } from './modules/tags/tags.module';
+import { EnumsModule } from './modules/metadata/enum.module';
 
 
 @Module({
@@ -22,7 +27,12 @@ import { ReviewsModule } from './modules/reviews/review.module';
     SubmissionsModule,
     ToolsModule,
     FiltersModule,
-    ReviewsModule
+    ReviewsModule,
+    CategoryModule,
+    IndustryModule,
+    UseCaseModule,
+    TagModule,
+    EnumsModule
   ],
   controllers: [],
   providers: [],

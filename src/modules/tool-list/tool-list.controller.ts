@@ -17,7 +17,6 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { ToolsService } from './tool-list.service';
-import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwtguard';
 
 @ApiTags('Tools')
