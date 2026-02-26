@@ -92,4 +92,12 @@ export class SubmissionsController {
   ) {
     return this.submissionsService.review(id, dto);
   }
+
+
+  @Get('my/pending')
+  @UseGuards(JwtAuthGuard)
+  findMyPending(@CurrentUser() user: any) {
+    return this.submissionsService.findMyToolsWithSubmissionStatus(user.id);
+  }
+
 }

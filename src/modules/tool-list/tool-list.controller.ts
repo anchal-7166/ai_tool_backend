@@ -18,6 +18,13 @@ import {
 } from '@nestjs/swagger';
 import { ToolsService } from './tool-list.service';
 import { JwtAuthGuard } from '../auth/jwtguard';
+import { CurrentUser } from '../auth/current-user.decorator';
+
+
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+}
 
 @ApiTags('Tools')
 @Controller('tools')
@@ -166,10 +173,36 @@ export class ToolsController {
     @Request() req, 
     // @CurrentUser('id') userId: string
   ) {
+    console.log("******************************88")
     const userId = req.user.id;
     return this.toolsService.likeUnlikeTool(toolId, userId);
   }
 
+
+  @Get(':id/favorite/check')
+  @UseGuards(JwtAuthGuard)
+  async checkFavorite(
+    @Param('id') toolId: string,
+    @Request() req
+  ) {
+     const userId = req.user.id;
+    return this.toolsService.checkUserFavorite(toolId, userId);
+  }
+
+
+@Get('my/published')
+@UseGuards(JwtAuthGuard)
+findMyPublished( @Request() req, @Query() params: PaginationParams) {
+  const userId = req.user.id;
+  return this.toolsService.findPublishedByUser(userId, params);
+}
+
+@Get('my/saved')
+@UseGuards(JwtAuthGuard)
+findMySaved(@Request() req, @Query() params: PaginationParams) {
+  const userId = req.user.id;
+  return this.toolsService.findSavedByUser(userId, params);
+}
 
 }
 

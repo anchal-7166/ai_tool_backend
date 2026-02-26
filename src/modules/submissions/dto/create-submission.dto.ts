@@ -4,7 +4,6 @@ import {
   IsUrl,
   IsArray,
   IsEnum,
-  IsUUID,
   MinLength,
   MaxLength,
   IsNotEmpty,
@@ -105,48 +104,6 @@ export class CreateSubmissionDto {
   @IsString({ each: true })
   searchKeywords?: string[];
 
-  // ==================== RELATIONS — IDs FROM FRONTEND SELECT BARS ====================
-
-  @ApiPropertyOptional({
-    description: 'Category IDs — picked from categories select bar (max 5)',
-    example: ['cat-0000-0000-0000-000000000001', 'cat-0000-0000-0000-000000000004'],
-  })
-  @IsOptional()
-  @IsArray()
-  @IsUUID('all', { each: true })
-  @ArrayMaxSize(5)
-  categoryIds?: string[];
-
-  @ApiPropertyOptional({
-    description: 'Tag IDs — picked from tags select bar (max 10)',
-    example: ['tag-0000-0000-0000-000000000001', 'tag-0000-0000-0000-000000000010'],
-  })
-  @IsOptional()
-  @IsArray()
-  @IsUUID('all', { each: true })
-  @ArrayMaxSize(10)
-  tagIds?: string[];
-
-  @ApiPropertyOptional({
-    description: 'Use Case IDs — picked from use cases select bar (max 8)',
-    example: ['uc-00000-0000-0000-000000000001', 'uc-00000-0000-0000-000000000008'],
-  })
-  @IsOptional()
-  @IsArray()
-  @IsUUID('all', { each: true })
-  @ArrayMaxSize(8)
-  useCaseIds?: string[];
-
-  @ApiPropertyOptional({
-    description: 'Industry IDs — picked from industries select bar (max 5)',
-    example: ['ind-0000-0000-0000-000000000001', 'ind-0000-0000-0000-000000000003'],
-  })
-  @IsOptional()
-  @IsArray()
-  @IsUUID('all', { each: true })
-  @ArrayMaxSize(5)
-  industryIds?: string[];
-
   // ==================== PRICING PLANS ====================
 
   @ApiProperty({
@@ -197,4 +154,49 @@ export class CreateSubmissionDto {
   @ValidateNested({ each: true })
   @Type(() => IntegrationDto)
   integrations?: IntegrationDto[];
+
+
+  // ==================== RELATIONS — IDs FROM FRONTEND SELECT BARS ====================
+
+@ApiPropertyOptional({
+  description: 'Category IDs — picked from categories select bar (max 5)',
+  example: ['cat-0000-0000-0000-000000000001', 'cat-0000-0000-0000-000000000004'],
+})
+@IsOptional()
+@IsArray()
+@IsString({ each: true })
+@ArrayMaxSize(5)
+categoryIds?: string[];
+
+@ApiPropertyOptional({
+  description: 'Tag IDs — picked from tags select bar (max 10)',
+  example: ['tag-0000-0000-0000-000000000001', 'tag-0000-0000-0000-000000000010'],
+})
+@IsOptional()
+@IsArray()
+@IsString({ each: true })
+@ArrayMaxSize(10)
+tagIds?: string[];
+
+@ApiPropertyOptional({
+  description: 'Use Case IDs — picked from use cases select bar (max 8)',
+  example: ['uc-00000-0000-0000-000000000001', 'uc-00000-0000-0000-000000000008'],
+})
+@IsOptional()
+@IsArray()
+@IsString({ each: true })
+@ArrayMaxSize(8)
+useCaseIds?: string[];
+
+@ApiPropertyOptional({
+  description: 'Industry IDs — picked from industries select bar (max 5)',
+  example: ['ind-0000-0000-0000-000000000001', 'ind-0000-0000-0000-000000000003'],
+})
+@IsOptional()
+@IsArray()
+@IsString({ each: true })
+@ArrayMaxSize(5)
+industryIds?: string[];
+
+
 }

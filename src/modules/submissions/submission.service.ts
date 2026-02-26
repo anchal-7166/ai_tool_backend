@@ -224,6 +224,25 @@ export class SubmissionsService {
     });
   }
 
+
+  async findMyToolsWithSubmissionStatus(userId: string) {    
+    return this.prisma.submission.findMany({
+      where: {
+        userId,
+        status: SubmissionStatus.PENDING,
+      },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        status: true,
+        createdAt: true,
+        reviewNote: true,
+        reviewedAt: true,
+        toolData: true,
+      },
+    });
+  }
+
   // ==================== PRIVATE: VALIDATE IDs ====================
 
   private async validateRelationIds(dto: CreateSubmissionDto) {
@@ -269,7 +288,6 @@ export class SubmissionsService {
       throw new BadRequestException(errors);
     }
   }
-
 
 
 }

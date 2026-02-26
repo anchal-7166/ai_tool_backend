@@ -225,6 +225,9 @@ async likeUnlikeTool(toolId: string, userId: string) {
     };
   }
 
+
+  //************ UPDATE METHODS TO USE TOOL-REPOSITORY INSTEAD DIRECT USING PRISMA SERVICE*******************************  */
+
   /**
    * Track click-through to tool website
    */
@@ -299,4 +302,116 @@ async likeUnlikeTool(toolId: string, userId: string) {
       // Silently fail - view tracking is not critical
     }
   }
+
+ 
+  /**
+ * Check if a user has already liked/favorited a tool
+ */
+async checkUserFavorite(toolId: string, userId: string): Promise<{ isFavorited: boolean }> {
+  const tool = await this.prisma.tool.findUnique({
+    where: { id: toolId },
+    select: { id: true },
+  });
+
+  if (!tool) {
+    throw new NotFoundException(`Tool with id "${toolId}" not found`);
+  }
+
+  const existingFavorite = await this.prisma.favorite.findUnique({
+    where: {
+      userId_toolId: {
+        userId,
+        toolId,
+      },
+    },
+  });
+
+  return { isFavorited: !!existingFavorite };
+}
+
+/**
+ * 1. Get all PUBLISHED tools by the logged-in user
+ */
+async findPublishedByUser(userId: string, params?: PaginationParams) {
+  const page = params?.page || 1;
+  const limit = params?.limit || 20;
+  const skip = (page - 1) * limit;
+
+  const [tools, total] = await Promise.all([
+    this.prisma.tool.findMany({
+      where: {
+        userId,
+        isPublished: true,
+        status: 'APPROVED',
+      },
+      skip,
+      take: limit,
+      orderBy: { publishedAt: 'desc' },
+      include: {
+        categories: { include: { category: true } },
+        tags: { include: { tag: true } },
+        pricingPlans: true,
+        _count: { select: { reviews: true, favorites: true } },
+      },
+    }),
+    this.prisma.tool.count({
+      where: { userId, isPublished: true, status: 'APPROVED' },
+    }),
+  ]);
+
+  return {
+    data: tools,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      hasNextPage: page < Math.ceil(total / limit),
+      hasPreviousPage: page > 1,
+    },
+  };
+}
+
+/**
+ * 3. Get all tools SAVED/FAVORITED by the logged-in user
+ */
+async findSavedByUser(userId: string, params?: PaginationParams) {
+  const page = params?.page || 1;
+  const limit = params?.limit || 20;
+  const skip = (page - 1) * limit;
+
+  const [favorites, total] = await Promise.all([
+    this.prisma.favorite.findMany({
+      where: { userId },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        tool: {
+          include: {
+            categories: { include: { category: true } },
+            tags: { include: { tag: true } },
+            pricingPlans: true,
+            _count: { select: { reviews: true, favorites: true } },
+          },
+        },
+      },
+    }),
+    this.prisma.favorite.count({ where: { userId } }),
+  ]);
+
+  return {
+    data: favorites.map(f => ({ ...f.tool, savedAt: f.createdAt })),
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      hasNextPage: page < Math.ceil(total / limit),
+      hasPreviousPage: page > 1,
+    },
+  };
+}
+
+
 }
