@@ -44,7 +44,6 @@ export class SubmissionsController {
     @CurrentUser() id,
     @Body() dto: CreateSubmissionDto,
   ) {
-     console.log(req.user, id,"**********************")
      const userId = req.user.id;
     
     return this.submissionsService.create(userId, dto);
@@ -55,6 +54,13 @@ export class SubmissionsController {
   @ApiOperation({ summary: 'Get all my submissions with their status' })
   async getMySubmissions(@CurrentUser('id') userId: string) {
     return this.submissionsService.findMySubmissions(userId);
+  }
+
+  @Get('my/pending')
+  @UseGuards(JwtAuthGuard)
+  findMyPending(@CurrentUser() user: any, @Request() req) {
+     const userId = req.user.id;
+    return this.submissionsService.findMyToolsWithSubmissionStatus(userId);
   }
 
   // GET /submissions/my/:id
@@ -93,11 +99,5 @@ export class SubmissionsController {
     return this.submissionsService.review(id, dto);
   }
 
-
-  @Get('my/pending')
-  @UseGuards(JwtAuthGuard)
-  findMyPending(@CurrentUser() user: any) {
-    return this.submissionsService.findMyToolsWithSubmissionStatus(user.id);
-  }
 
 }
