@@ -189,7 +189,7 @@ model UseCase {
   title       String    @unique           // "Generate blog posts"
   description String?                     // "Create SEO-optimized blog content in minutes"
   slug        String    @unique           // "generate-blog-posts"
-  icon        String?                     // "✍️"
+  icon        String?                     // 
   createdAt   DateTime  @default(now()) 
   // Relations
   tools       ToolUseCase[]
