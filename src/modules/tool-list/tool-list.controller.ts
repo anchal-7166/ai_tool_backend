@@ -118,15 +118,65 @@ export class ToolsController {
     return this.toolsService.findByTag(slug, { limit });
   }
 
-  // ==================== SINGLE TOOL ENDPOINTS ====================
+  // ==================== USER / ID SPECIFIC ENDPOINTS ====================
 
-  @Get(':slug')
-  @ApiOperation({ summary: 'Get tool by slug with full details' })
-  @ApiParam({ name: 'slug', example: 'chatgpt' })
-  @ApiResponse({ status: 200, description: 'Returns tool details' })
+  @Get('my/published')
+  @UseGuards(JwtAuthGuard)
+  findMyPublished(@Request() req, @Query() params: PaginationParams) {
+    const userId = req.user.id;
+    return this.toolsService.findPublishedByUser(userId, params);
+  }
+
+  @Get('my/saved')
+  @UseGuards(JwtAuthGuard)
+  findMySaved(@Request() req, @Query() params: PaginationParams) {
+    const userId = req.user.id;
+    return this.toolsService.findSavedByUser(userId, params);
+  }
+
+  @Get('id/:id')
+  @ApiOperation({ summary: 'Get tool by ID' })
+  @ApiParam({ name: 'id', example: 'uuid-here' })
+  @ApiResponse({ status: 200, description: 'Returns tool details by ID' })
   @ApiResponse({ status: 404, description: 'Tool not found' })
-  async findOne(@Param('slug') slug: string) {
-    return this.toolsService.findBySlug(slug);
+  async findById(@Param('id') id: string, @Request() req: any) {
+    const userId = req.user?.id;
+    const ipAddress = (req.headers?.['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || req.socket?.remoteAddress;
+    return this.toolsService.findToolById(id, { userId, ipAddress });
+  }
+
+  @Post(':id/favorite')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Like or Unlike a tool (toggle favorite)' })
+  @ApiParam({ name: 'id', example: 'uuid-here' })
+  @ApiResponse({ status: 200, description: 'Toggles favorite status' })
+  @ApiResponse({ status: 404, description: 'Tool not found' })
+  async likeUnlikeTool(
+    @Param('id') toolId: string, 
+    @Request() req, 
+  ) {
+    const userId = req.user.id;
+    return this.toolsService.likeUnlikeTool(toolId, userId);
+  }
+
+  @Get(':id/favorite/check')
+  @UseGuards(JwtAuthGuard)
+  async checkFavorite(
+    @Param('id') toolId: string,
+    @Request() req
+  ) {
+    const userId = req.user.id;
+    return this.toolsService.checkUserFavorite(toolId, userId);
+  }
+
+  // ==================== SLUG & TRACKING ENDPOINTS ====================
+
+  @Post(':slug/click')
+  @ApiOperation({ summary: 'Track click-through to tool website' })
+  @ApiParam({ name: 'slug', example: 'chatgpt' })
+  @ApiResponse({ status: 200, description: 'Click tracked, returns website URL' })
+  async trackClick(@Param('slug') slug: string) {
+    return this.toolsService.trackClick(slug);
   }
 
   @Get(':slug/similar')
@@ -141,68 +191,15 @@ export class ToolsController {
     return this.toolsService.findSimilar(slug, limit);
   }
 
-  // ==================== TRACKING ENDPOINTS ====================
-
-  @Post(':slug/click')
-  @ApiOperation({ summary: 'Track click-through to tool website' })
+  @Get(':slug')
+  @ApiOperation({ summary: 'Get tool by slug with full details' })
   @ApiParam({ name: 'slug', example: 'chatgpt' })
-  @ApiResponse({ status: 200, description: 'Click tracked, returns website URL' })
-  async trackClick(@Param('slug') slug: string) {
-    return this.toolsService.trackClick(slug);
-  }
-
-
-  @Get('id/:id')
-  @ApiOperation({ summary: 'Get tool by ID' })
-  @ApiParam({ name: 'id', example: 'uuid-here' })
-  @ApiResponse({ status: 200, description: 'Returns tool details by ID' })
+  @ApiResponse({ status: 200, description: 'Returns tool details' })
   @ApiResponse({ status: 404, description: 'Tool not found' })
-  async findById(@Param('id') id: string) {
-    return this.toolsService.findToolById(id);
+  async findOne(@Param('slug') slug: string, @Request() req: any) {
+    const userId = req.user?.id;
+    const ipAddress = (req.headers?.['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || req.socket?.remoteAddress;
+    return this.toolsService.findBySlug(slug, true, { userId, ipAddress });
   }
-
-
-  @Post(':id/favorite')
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Like or Unlike a tool (toggle favorite)' })
-  @ApiParam({ name: 'id', example: 'uuid-here' })
-  @ApiResponse({ status: 200, description: 'Toggles favorite status' })
-  @ApiResponse({ status: 404, description: 'Tool not found' })
-  async likeUnlikeTool(
-    @Param('id') toolId: string, 
-    @Request() req, 
-    // @CurrentUser('id') userId: string
-  ) {
-    console.log("******************************88")
-    const userId = req.user.id;
-    return this.toolsService.likeUnlikeTool(toolId, userId);
-  }
-
-
-  @Get(':id/favorite/check')
-  @UseGuards(JwtAuthGuard)
-  async checkFavorite(
-    @Param('id') toolId: string,
-    @Request() req
-  ) {
-     const userId = req.user.id;
-    return this.toolsService.checkUserFavorite(toolId, userId);
-  }
-
-
-@Get('my/published')
-@UseGuards(JwtAuthGuard)
-findMyPublished( @Request() req, @Query() params: PaginationParams) {
-  const userId = req.user.id;
-  return this.toolsService.findPublishedByUser(userId, params);
-}
-
-@Get('my/saved')
-@UseGuards(JwtAuthGuard)
-findMySaved(@Request() req, @Query() params: PaginationParams) {
-  const userId = req.user.id;
-  return this.toolsService.findSavedByUser(userId, params);
-}
-
 }
 

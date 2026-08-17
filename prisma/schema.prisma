@@ -418,6 +418,7 @@ model UserPreference {
 model ToolView {
   id          String    @id @default(uuid()) 
   userId      String?                     // null for anonymous
+  ipAddress   String?                     // IP address for deduplicating anonymous views
   user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   toolId      String
   tool        Tool      @relation(fields: [toolId], references: [id], onDelete: Cascade)
@@ -430,6 +431,7 @@ model ToolView {
   
   @@map("tool_views")
   @@index([userId])
+  @@index([ipAddress])
   @@index([toolId])
   @@index([viewedAt])
 }

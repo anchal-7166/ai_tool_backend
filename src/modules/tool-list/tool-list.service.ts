@@ -51,7 +51,7 @@ export class ToolsService {
    * Get tool by slug with full details
    * Increments view count
    */
-  async findBySlug(slug: string, trackView: boolean = true) {
+  async findBySlug(slug: string, trackView: boolean = true, context?: { userId?: string; ipAddress?: string }) {
     const tool = await this.toolsRepo.findBySlugWithDetails(slug);
 
     if (!tool) {
@@ -63,16 +63,9 @@ export class ToolsService {
       throw new NotFoundException(`Tool with slug "${slug}" not found`);
     }
 
-    // Track view in background (don't await)
+    // Track unique view in background (don't await)
     if (trackView) {
-      this.toolsRepo.incrementViewCount(tool.id).catch(() => {
-        // Silently fail if view tracking fails
-      });
-
-      // Create view record for analytics
-      this.createViewRecord(tool.id).catch(() => {
-        // Silently fail
-      });
+      this.recordUniqueView(tool.id, context).catch(() => {});
     }
 
     return tool;
@@ -123,15 +116,19 @@ export class ToolsService {
   }
 
 
- async findToolById(id: string) {
-  const tool = await this.prisma.tool.findUnique({
+  async findToolById(id: string, context?: { userId?: string; ipAddress?: string }) {
+    const tool = await this.prisma.tool.findUnique({
       where: { id },
       select: { id: true },
     });
-   
+
     if (!tool) {
-      throw new NotFoundException(`Tool with slug "${id}" not found`);
+      throw new NotFoundException(`Tool with id "${id}" not found`);
     }
+
+    // Track unique view in background
+    this.recordUniqueView(tool.id, context).catch(() => {});
+
     return this.toolsRepo.findById(tool.id);
   }
 
@@ -286,20 +283,49 @@ async likeUnlikeTool(toolId: string, userId: string) {
   }
 
   /**
-   * Create a view record for analytics
-   * Private method called when tracking views
+   * Record a unique view per user/IP within a 24-hour window.
+   * If the user/IP has already viewed this tool in the last 24 hours, skip incrementing viewCount.
    */
-  private async createViewRecord(toolId: string) {
+  async recordUniqueView(toolId: string, context?: { userId?: string; ipAddress?: string }) {
     try {
-      await this.prisma.toolView.create({
-        data: {
-          toolId,
-          // If you have user auth, you can add userId here
-          // userId: currentUserId,
-        },
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const userId = context?.userId || null;
+      const ipAddress = context?.ipAddress || null;
+
+      // Build search filter for 24-hour window deduplication
+      const whereCondition: any = {
+        toolId,
+        viewedAt: { gte: twentyFourHoursAgo },
+      };
+
+      if (userId) {
+        whereCondition.userId = userId;
+      } else if (ipAddress) {
+        whereCondition.ipAddress = ipAddress;
+      }
+
+      // Check if user/IP already viewed this tool in the last 24h
+      const existingView = await this.prisma.toolView.findFirst({
+        where: whereCondition,
       });
+
+      if (existingView) {
+        return; // Deduplicated — view already counted within 24h window
+      }
+
+      // Record new unique view and increment metrics
+      await Promise.all([
+        this.prisma.toolView.create({
+          data: {
+            toolId,
+            userId,
+            ipAddress,
+          },
+        }),
+        this.toolsRepo.incrementViewCount(toolId),
+      ]);
     } catch (error) {
-      // Silently fail - view tracking is not critical
+      // Silently fail for background analytics
     }
   }
 
