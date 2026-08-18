@@ -119,7 +119,7 @@ export class ToolsService {
   async findToolById(id: string, context?: { userId?: string; ipAddress?: string }) {
     const tool = await this.prisma.tool.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, slug: true },
     });
 
     if (!tool) {
@@ -129,7 +129,7 @@ export class ToolsService {
     // Track unique view in background
     this.recordUniqueView(tool.id, context).catch(() => {});
 
-    return this.toolsRepo.findById(tool.id);
+    return this.toolsRepo.findBySlugWithDetails(tool.slug);
   }
 
 

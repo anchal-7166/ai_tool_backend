@@ -5,7 +5,7 @@ import { CategoriesSeed } from './categories.seed/categories.service';
 import { TagsSeed } from './tags.seed/tages.service';
 import { IndustriesSeed } from './industries.seed/industries.service';
 import { UseCasesSeed } from './use-cases.seed/use-cases.service';
-
+import { ToolsSeed } from './tools.seed/tools.service';
 
 @Module({
   imports: [PrismaModule],
@@ -15,6 +15,7 @@ import { UseCasesSeed } from './use-cases.seed/use-cases.service';
     TagsSeed,
     IndustriesSeed,
     UseCasesSeed,
+    ToolsSeed,
   ],
 })
 export class SeedModule {}

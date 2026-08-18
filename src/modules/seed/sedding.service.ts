@@ -3,7 +3,7 @@ import { CategoriesSeed } from './categories.seed/categories.service';
 import { TagsSeed } from './tags.seed/tages.service';
 import { IndustriesSeed } from './industries.seed/industries.service';
 import { UseCasesSeed } from './use-cases.seed/use-cases.service';
-
+import { ToolsSeed } from './tools.seed/tools.service';
 
 @Injectable()
 export class SeedService {
@@ -14,6 +14,7 @@ export class SeedService {
     private readonly tagsSeed: TagsSeed,
     private readonly industriesSeed: IndustriesSeed,
     private readonly useCasesSeed: UseCasesSeed,
+    private readonly toolsSeed: ToolsSeed,
   ) {}
 
   async run() {
@@ -23,6 +24,7 @@ export class SeedService {
     await this.tagsSeed.run();
     await this.industriesSeed.run();
     await this.useCasesSeed.run();
+    await this.toolsSeed.run();
 
     this.logger.log('✅ Seeding completed');
   }
